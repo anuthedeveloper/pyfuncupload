@@ -48,74 +48,69 @@ SUPPORTED_MIME_TYPES = {
 #     blob_client.upload_blob(file_data, blob_type="BlockBlob", content_type=content_type)
 #     logging.info(f"File {file_name} successfully uploaded to Blob Storage.")
 
-def process_multipart_formdata(body, content_type):
-    try:
-        # Log the Content-Type for debugging
-        logging.info(f"Content-Type received: {content_type}")
-        # Fallback for unexpected content-types
-        if 'multipart/form-data' not in content_type:
-            return func.HttpResponse("Unsupported Content-Type.", status_code=400)
+# def process_multipart_formdata(body, content_type):
+#     try:
+#         # Log the Content-Type for debugging
+#         logging.info(f"Content-Type received: {content_type}")
+#         # Fallback for unexpected content-types
+#         if 'multipart/form-data' not in content_type:
+#             return func.HttpResponse("Unsupported Content-Type.", status_code=400)
 
-        # Parse multipart form-data
-        multipart_data = decoder.MultipartDecoder(body, content_type)
-        # Process each part
-        for part in multipart_data.parts:
-            content_disposition = part.headers.get(b'Content-Disposition', b'').decode()
-            if 'filename=' in content_disposition:
-                filename = content_disposition.split('filename=')[1].strip('"')
-                file_content = part.content
-                logging.info(f"Received file: {filename}, Size: {len(file_content)} bytes")
-                # You can process file_content as needed
-                return func.HttpResponse(f"File {filename} uploaded successfully.", status_code=200)
+#         # Parse multipart form-data
+#         multipart_data = decoder.MultipartDecoder(body, content_type)
+#         # Process each part
+#         for part in multipart_data.parts:
+#             content_disposition = part.headers.get(b'Content-Disposition', b'').decode()
+#             if 'filename=' in content_disposition:
+#                 filename = content_disposition.split('filename=')[1].strip('"')
+#                 file_content = part.content
+#                 logging.info(f"Received file: {filename}, Size: {len(file_content)} bytes")
+#                 # You can process file_content as needed
+#                 return func.HttpResponse(f"File {filename} uploaded successfully.", status_code=200)
 
-        return func.HttpResponse("No file found in the requst", status_code=400)
-        # # Wrap the file content in an in-memory file object
-        # pdf_byte_stream = io.BytesIO(file_content)
+#         return func.HttpResponse("No file found in the requst", status_code=400)
+#         # # Wrap the file content in an in-memory file object
+#         # pdf_byte_stream = io.BytesIO(file_content)
 
-        # # Process the PDF (Example: Extract text)
-        # pdf_text = get_pdf_text(pdf_byte_stream)
+#         # # Process the PDF (Example: Extract text)
+#         # pdf_text = get_pdf_text(pdf_byte_stream)
 
-        # # Log and return the extracted text
-        # logging.info(f"Extracted text from {file_name}:\n{pdf_text}")
-        # return func.HttpResponse(pdf_text, status_code=200, mimetype="text/plain")
-    except Exception as e:
-        logging.error(f"Error processing file: {str(e)}")
-        return func.HttpResponse(f"Error during file upload: {str(e)}", status_code=500)
+#         # # Log and return the extracted text
+#         # logging.info(f"Extracted text from {file_name}:\n{pdf_text}")
+#         # return func.HttpResponse(pdf_text, status_code=200, mimetype="text/plain")
+#     except Exception as e:
+#         logging.error(f"Error processing file: {str(e)}")
+#         return func.HttpResponse(f"Error during file upload: {str(e)}", status_code=500)
 
-def get_file_name_from_headers(req):
-    content_disposition = req.headers.get("Content-Disposition", "")
-    match = re.search(r'filename="(.+)"', content_disposition)
-    if match:
-        return match.group(1)  # Extracted file name from Content-Disposition
-    return "uploaded_file"
+# def get_file_name_from_headers(req):
+#     content_disposition = req.headers.get("Content-Disposition", "")
+#     match = re.search(r'filename="(.+)"', content_disposition)
+#     if match:
+#         return match.group(1)  # Extracted file name from Content-Disposition
+#     return "uploaded_file"
 
-def retrieve_filename(re1):
-    # Retrieve the uploaded file's content and metadata
-    file_stream = req.files.get("file")  # Access the file
-    content_disposition = req.headers.get("Content-Disposition", "")
+# def retrieve_filename(re1):
+#     # Retrieve the uploaded file's content and metadata
+#     file_stream = req.files.get("file")  # Access the file
+#     content_disposition = req.headers.get("Content-Disposition", "")
     
-    # Extract the original file name from Content-Disposition header
-    file_name = "uploaded_file"  # Default file name
-    match = re.search(r'filename="(.+)"', content_disposition)
-    if match:
-        file_name = match.group(1)
+#     # Extract the original file name from Content-Disposition header
+#     file_name = "uploaded_file"  # Default file name
+#     match = re.search(r'filename="(.+)"', content_disposition)
+#     if match:
+#         file_name = match.group(1)
 
-    # If Content-Disposition isn't provided, fallback to file.stream.filename
-    if not match and file_stream.filename:
-        file_name = file_stream.filename
+#     # If Content-Disposition isn't provided, fallback to file.stream.filename
+#     if not match and file_stream.filename:
+#         file_name = file_stream.filename
 
-    return file_name
+#     return file_name
 
 
 # Main entry
 @app.route(route="http_trigger")
 def http_trigger(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
-    # name = req.params.get('file')
-    # For debugging
-    # logging.info(f"Headers: {req.headers}")
-    # logging.info(f"Form: {req.form}")
-    # logging.info(f"Raw Body: {req.get_body()}")
     try:
         # logging.info(f'Python HTTP trigger function request {req.get_body()}')
         # Extract the content type from headers
@@ -160,7 +155,6 @@ def http_trigger(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         logging.info(f"File name: {file_name}, Extension: {file_extension}")
-        # logging.info(f"Uploaded file: {file_name}, Extension: {file_extension}, Size: {len(file_data)} bytes")
         return func.HttpResponse(f"File {file_name} with extension {file_extension} and file date {file_data} uploaded successfully.", status_code=200)
     except Exception as e:
         logging.error(f"Error processing file: {e}")
@@ -168,4 +162,16 @@ def http_trigger(req: func.HttpRequest) -> func.HttpResponse:
 
 
 
-
+# def main(req: func.HttpRequest) -> func.HttpResponse:
+#     logging.info('Python HTTP trigger function processed a request')
+#     if req.method == 'GET':
+#         index_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'index.html')
+#         with open(index_path, 'r') as index:
+#             return func.HttpResponse(body=index.read(), mimetype='text/html')
+#     if req.method == 'POST':
+#         try:
+#             file = req.files['name_attribute_value_in_html']
+#             return func.HttpResponse('Processed file with filename: %s' % (file.filename))
+#         except:
+#             return func.HttpResponse('Something went wrong when processing the file', status_code=400)
+#     return func.HttpResponse('Unsupported operation', status_code=400)
